@@ -20,16 +20,16 @@ type Props = {
 
 const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   // État local pour stocker les valeurs saisies par l'utilisateur
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('test1@gmail.com');
   const [countryCode, setCountryCode] = useState('+33');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('0695170000');
+  const [password, setPassword] = useState('test1test1');
   const [errors, setErrors] = useState<ErrorState>({});
 
   // Fonction pour gérer la soumission du formulaire d'enregistrement de l'utilisateur
   const handleRegister = async () => {
     try {
-      const response = await axios.post('http://192.168.1.29:8000/auth/register', {
+      const response = await axios.post('http://localhost:8000/auth/register', {
         email,
         countryCode,
         phone,
@@ -37,21 +37,38 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
       });
 
       // Vérifier si la réponse indique un succès
-      if (response.status === 200) {
-        // Naviguer vers l'écran de confirmation
-        navigation.navigate('ConfirmationScreen');
-      }
-
+    if (response.status === 200) {
+      // Naviguer vers l'écran de confirmation
+      navigation.navigate('ConfirmationScreen');
       // Clear errors on successful registration
       setErrors({});
+      return; // Exit the function after successful registration
+    }
+
+           
+      // Clear errors on successful registration
+      setErrors({});
+
     } catch (error) {
+
       if (axios.isAxiosError(error)) {
+
+        // Handle specific error responses
+        if (error.response?.status === 400) {
+          // Email already registered
+          setErrors({ email: 'Email already registered' });
+          return; // Exit the function after setting the error
+        }
+
         // Extract and set the error messages for specific fields
         const errorData = error.response?.data?.detail || {};
         const newErrors: ErrorState = {};
+        console.log(errorData);
+        console.log(typeof(error))
 
         Object.keys(errorData).forEach((key) => {
           const err = errorData[key];
+          
           const field = err.loc[1] as keyof ErrorState; // loc[1] contains the field name
           let message = err.msg;
 
